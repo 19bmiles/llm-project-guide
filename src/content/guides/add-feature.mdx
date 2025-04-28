@@ -1,0 +1,67 @@
+---
+title: "Adding Features to Existing Projects"
+description: "Learn how to integrate new features into an existing codebase with AI assistance"
+date: "2024-04-28"
+author: "HackAI Team"
+tags: ["guide", "add-feature", "tutorial"]
+---
+
+# Adding Features to Existing Projects
+
+This guide will help you integrate new features into an existing codebase using AI assistance.
+
+## Understanding the Codebase
+
+Before adding a new feature, it's important to understand the existing codebase:
+
+1. Review the project structure
+2. Identify key components and their relationships
+3. Understand the data flow
+4. Identify potential integration points
+
+## Code Example: Feature Integration
+
+```typescript
+// Example of integrating a new feature into an existing component
+import { useState } from 'react'
+import { ExistingComponent } from '@/components/ExistingComponent'
+
+export function EnhancedComponent() {
+  const [newFeatureState, setNewFeatureState] = useState(false)
+  
+  return (
+    <div>
+      <ExistingComponent />
+      <div className="mt-4 p-4 border rounded">
+        <h3>New Feature</h3>
+        <button 
+          onClick={() => setNewFeatureState(!newFeatureState)}
+          className="px-4 py-2 bg-blue-500 text-white rounded"
+        >
+          Toggle Feature
+        </button>
+        {newFeatureState && (
+          <div className="mt-2">
+            <p>New feature content</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+## Testing Your Integration
+
+After adding a new feature, it's important to test it thoroughly:
+
+1. Write unit tests for the new functionality
+2. Test integration with existing components
+3. Verify that existing functionality still works
+4. Perform end-to-end testing
+
+## Next Steps
+
+1. Check out our [green-field guide](/guides/green-field)
+2. Explore the [prompt library](/resources/prompt-library)
+3. Join our community discussions 
