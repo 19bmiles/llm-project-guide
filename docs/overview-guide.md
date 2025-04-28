@@ -13,7 +13,7 @@ palette:
   accent: "#17b978"
 stack: ["Next.js 19", "React 15", "TypeScript", "Tailwind", "shadcn/ui"]
 deployment: "Vercel"
-repo: "https://github.com/hackai/llm-project-guide"
+repo: "https://github.com/19bmiles/llm-project-guide"
 ---
 
 # Project Vision
