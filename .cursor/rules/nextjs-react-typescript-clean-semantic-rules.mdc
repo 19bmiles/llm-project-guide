@@ -1,0 +1,213 @@
+---
+description: 
+globs: *.tsx
+alwaysApply: false
+---
+# Cursor IDE Rules for Clean NextJS 15 & React 19 Development
+
+## Code Clarity Without Comments
+
+- **No Implementation Comments**: Avoid comments entirely. Use descriptive function and variable names to make code self-explanatory.
+- **Function Extraction Over Comments**: If logic is too complex to understand without comments, refactor it into smaller, well-named functions.
+- **Acceptable Comment Cases Only**:
+  - Complex algorithm explanations with links to papers/documentation
+- **Examples of Violations**:
+  ```typescript
+  // BAD: Explaining what the code does
+  // Convert label IDs to label objects
+  const labels = labelIds.map(id => ({ name: id, variant: 'outline' }));
+  
+  // GOOD: Let the code speak for itself
+  const labelsWithVariants = labelIds.map(id => ({ name: id, variant: 'outline' }));
+  ```
+- **Express Intent Through Naming**: Use variable and function names that clearly indicate purpose and behavior:
+  ```typescript
+  // BAD: Poor naming with comment
+  // Default asset labels that can be easily modified
+  const labels = ["document", "image", "video"];
+  
+  // GOOD: Self-documenting through naming
+  const CONFIGURABLE_ASSET_LABELS = ["document", "image", "video"];
+  ```
+- **Documentation vs. Implementation**: Keep implementation code free of comments. If documentation is necessary, use JSDoc for public APIs and interfaces only.
+
+## Code Clarity and Organization
+
+- **Descriptive Naming**: Use clear, descriptive names for functions, variables, and components that explain their purpose
+- **Function Purpose**: Each function should do one thing well and its name should describe what it does
+- **Variable Naming**: Variables should have meaningful names that indicate their content and purpose
+- **Function Length**: Keep functions concise and focused on a single responsibility
+- **Component Structure**: Organize components logically with related functionality grouped together
+
+## NextJS 15 App Router & React 19 Server Components
+
+- **Server Components First**: Default all components to server components unless they specifically require client-side functionality
+- **Client Component Depth**: Push client components as far down the component tree as possible
+- **Server vs Client Boundary**: Clearly mark client components with 'use client' directive at the top of the file
+- **Data Fetching**: Use server components for data fetching to eliminate client-side network requests
+- **State Management**: Minimize client-side state; use server components for data that doesn't need reactivity
+- **Progressive Enhancement**: Design features to work without JavaScript first, then enhance the experience
+
+## Server-Side Optimization
+
+- **Server-Side Execution**: Prefer server function code executed by server components over exposing code with server actions
+- **Server Actions Usage**: Only use server actions when the functionality must be triggered by client interactions
+- **API Route Handlers**: Choose server actions over API route handlers for internal application functionality
+- **Public API Surface**: Remember server actions create publicly accessible API endpoints; secure them appropriately
+- **Server Component Caching**: Leverage React 19's caching capabilities for server components to optimize performance
+- **Data Flow**: Structure data flow to minimize client-server communication
+
+## Form Handling Best Practices
+
+- **Client Component Requirement**: Form components using `useActionState` must be client components (marked with `'use client'`)
+- **Server Actions**: Define form processing functions with `'use server'` directive to make them server actions
+- **Form Structure**: Use the native React `<form>` component with the `action` prop pointing to a server action:
+  ```typescript
+  <form action={formAction}>
+  ```
+- **Action State Management**: Always implement `useActionState` to manage form submission states and preserve input values:
+  ```typescript
+  const [state, formAction] = useActionState(submitAddress, {
+    // Initial state
+  });
+  ```
+- **Input Value Preservation**: Always return input values from server actions to prevent form clearing on validation errors:
+  ```typescript
+  // In server action
+  if (validationErrors) {
+    return {
+      errors: validationErrors,
+      inputs: {
+        // Return all submitted form data
+        streetAddress,
+        city,
+        state,
+        zipCode,
+        country
+      }
+    };
+  }
+  ```
+- **Default Value Binding**: Set `defaultValue` on all form inputs to use the state values returned from server actions:
+  ```typescript
+  <input 
+    name="streetAddress" 
+    defaultValue={state.inputs?.streetAddress || ''}
+    required
+  />
+  ```
+- **Dual Validation Strategy**: Implement both client-side and server-side validation:
+  - Client validation: Use HTML attributes (`required`, `minLength`, `pattern`) for immediate feedback
+  - Server validation: Validate all data in server actions regardless of client validation
+- **Form Error Display**: Render field-specific error messages from the returned state:
+  ```typescript
+  {state.errors?.streetAddress && (
+    <p className="text-red-500">{state.errors.streetAddress}</p>
+  )}
+  ```
+- **Loading State Indication**: Use the pending state from `useActionState` to show loading indicators:
+  ```typescript
+  <button type="submit" disabled={state.pending}>
+    {state.pending ? 'Saving...' : 'Save Address'}
+  </button>
+  ```
+- **Autocomplete Support**: Add appropriate `autocomplete` attributes to form fields for better browser integration
+- **Form Reset Consideration**: Only rely on the browser's automatic form resetting behavior for successful submissions, not for validation errors
+- **Progressive Enhancement**: Ensure forms work without JavaScript by structuring them as standard HTML forms with server-side processing
+
+## React Component Definition Styles
+
+- **Function Declarations for Complex Components**: Use the `function` keyword for page components, complex components with hooks, or components with multiple return paths:
+  ```tsx
+  // For page components or complex components with hooks
+  export default function ProductPage({ product }) {
+    const [quantity, setQuantity] = useState(1);
+    // Implementation with hooks, conditional rendering, etc.
+    return (
+      <Layout>
+        <ProductDetails product={product} quantity={quantity} />
+      </Layout>
+    );
+  }
+  ```
+- **Arrow Functions for Simple Components**: Use arrow functions for simple presentational components, especially with implicit returns:
+  ```tsx
+  // For simple presentational components
+  const Button = ({ label, onClick }) => (
+    <button className="btn" onClick={onClick}>
+      {label}
+    </button>
+  );
+  ```
+- **Consistent Component Naming**: Use PascalCase for all component names regardless of the definition style
+
+## Project Structure
+
+- **Route Organization**: Align file structure with the App Router's routing conventions
+- **Component Organization**: Group components by feature rather than by type
+- **Shared Code**: Place shared utilities and components in appropriate directories
+- **Module Boundaries**: Establish clear boundaries between different parts of the application
+- **Import Structure**: Organize imports with React and Next.js imports first, followed by third-party libraries, then local imports
+
+## TypeScript Best Practices
+
+- **Type Definition**: Define explicit types for all functions, components, and complex objects
+- **Prop Types**: Use TypeScript interfaces for component props with descriptive names
+- **Return Types**: Specify return types for all functions and components
+- **API Contracts**: Define clear input/output types for server actions and API routes
+- **Type Reuse**: Create shared type definitions for data structures used across components
+- **Double-Pipe Default Pattern**: Use the double-pipe operator (`||`) with fallback objects to maintain consistent types instead of allowing undefined values:
+  ```typescript
+  // Preferred
+  const user = fetchedUser || { id: '', name: '' };
+  
+  // Avoid
+  const user = fetchedUser;  // Could be undefined
+  ```
+- **Object Destructuring**: Prefer object destructuring to access properties over dot notation and optional chaining:
+  ```typescript
+  // Preferred
+  const { name, age } = user;
+  
+  // Avoid
+  const name = user?.name;
+  const age = user?.age;
+  ```
+- **Default Parameter Values**: Use TypeScript parameter default values instead of React's defaultProps:
+  ```typescript
+  // Preferred
+  function Component({ title = 'Default Title', count = 0 }: Props) {
+    // Implementation
+  }
+  
+  // Avoid
+  function Component(props: Props) {
+    // Implementation
+  }
+  Component.defaultProps = { title: 'Default Title', count: 0 };
+  ```
+- **Prefer Map Objects Over Enums**: Use const objects with type assertions instead of TypeScript enums:
+  ```typescript
+  // Instead of enum
+  enum Direction {
+    Up = "UP",
+    Down = "DOWN",
+    Left = "LEFT",
+    Right = "RIGHT"
+  }
+  
+  // Use const object with type assertion
+  const Direction = {
+    Up: "UP",
+    Down: "DOWN",
+    Left: "LEFT",
+    Right: "RIGHT"
+  } as const;
+  
+  type Direction = typeof Direction[keyof typeof Direction];
+  ```
+- **Type Assertion**: Use type assertions sparingly and only when you have absolute certainty about a type
+- **Generic Types**: Leverage generic types for reusable functions and components to maintain type safety
+- **Discriminated Unions**: Use discriminated unions for complex state objects instead of optional properties
+- **Avoid Type Any**: Never use `any` type; use `unknown` when necessary and narrow the type appropriately
+- **Utility Types**: Make use of TypeScript utility types (Pick, Omit, Partial, Required, etc.) to derive types from existing interfaces
