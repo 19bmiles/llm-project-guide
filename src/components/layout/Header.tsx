@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export function Header() {
   return (
@@ -20,6 +21,7 @@ export function Header() {
             <Link href="/about">
               <Button variant="ghost">About</Button>
             </Link>
+            <ThemeToggle />
           </div>
         </nav>
       </div>
