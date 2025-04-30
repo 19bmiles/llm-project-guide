@@ -1,29 +1,30 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Menu } from 'lucide-react'
 
 export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="font-bold">HackAI Guide</span>
+      <div className="container flex h-16 items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link href="/" className="flex items-center gap-2 group">
+            <span className="inline-block w-3 h-3 rounded-full bg-brand-accent group-hover:scale-110 transition-transform" />
+            <span className="font-extrabold text-xl tracking-tight text-brand-accent group-hover:text-brand-base transition-colors">HackAI Guide</span>
           </Link>
         </div>
-        <nav className="flex flex-1 items-center justify-between space-x-2">
-          <div className="flex-1 items-stretch mx-8 px-4">
-            <Link href="/guides/green-field" className="text-sm font-medium mx-4">Green-field</Link>
-            <Link href="/guides/add-feature" className="text-sm font-medium mx-4">Add Feature</Link>
-            <Link href="/resources/prompt-library" className="text-sm font-medium mx-4">Prompts</Link>
-          </div>
-          <div className="flex items-center space-x-2">
-            <Link href="/about">
-              <Button variant="ghost">About</Button>
-            </Link>
-            <ThemeToggle />
-          </div>
+        <nav className="md:flex items-center gap-6">
+          <Link href="/guides" className="text-sm font-medium hover:text-brand-accent transition-colors">Guides</Link>
+          <Link href="/resources/prompt-library" className="text-sm font-medium hover:text-brand-accent transition-colors">Prompt Library</Link>
+          <Link href="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About</Link>
         </nav>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          {/* Mobile menu button for sidebar */}
+          <button className="md:hidden p-2 rounded hover:bg-accent/20 transition-colors" aria-label="Open menu">
+            <Menu className="w-6 h-6 text-brand-accent" />
+          </button>
+        </div>
       </div>
     </header>
   )
