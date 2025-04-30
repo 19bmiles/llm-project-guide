@@ -5,6 +5,9 @@ import { Badge } from '@/components/ui/badge'
 import { MDXContent } from '@/components/MDXContent'
 import Link from 'next/link'
 
+// Enable dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 interface GuidePageProps {
   params: Promise<{
     slug: string
