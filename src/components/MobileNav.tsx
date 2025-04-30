@@ -1,4 +1,4 @@
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from '@/components/ui/sheet'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getAllGuides } from '@/lib/mdx'
@@ -16,6 +16,7 @@ export async function MobileNav() {
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-[80%] max-w-sm">
+        <SheetTitle>Navigation Menu</SheetTitle>
         <nav className="flex flex-col gap-4 mt-8">
           <Link 
             href="/guides" 
