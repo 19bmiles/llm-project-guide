@@ -3,7 +3,6 @@ import path from 'path'
 import matter from 'gray-matter'
 import { serialize } from 'next-mdx-remote/serialize'
 import type { MDXRemoteSerializeResult } from 'next-mdx-remote'
-import rehypePrism from 'rehype-prism-plus'
 
 const guidesDirectory = path.join(process.cwd(), 'src/content/guides')
 

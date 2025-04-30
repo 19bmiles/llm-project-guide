@@ -1,8 +1,7 @@
 import { getAllGuides } from '@/lib/mdx'
 import Link from 'next/link'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button' // Assuming Button is installed
 
 export default async function GuidesPage() {
   const guides = await getAllGuides()
