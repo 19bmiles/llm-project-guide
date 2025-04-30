@@ -31,7 +31,7 @@ export function Header() {
             href="https://www.hackai.live" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium border-2 border-brand-base hover:bg-brand-accent/10 text-white h-9 px-4 py-2 transition-colors"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium border-2 border-brand-base hover:bg-brand-accent/10 h-9 px-4 py-2 transition-colors"
           >
             HackAI Home
           </Link>
