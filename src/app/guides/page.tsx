@@ -1,38 +1,55 @@
 import { getAllGuides } from '@/lib/mdx'
 import Link from 'next/link'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button' // Assuming Button is installed
 
 export default async function GuidesPage() {
   const guides = await getAllGuides()
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-4xl font-bold">Guides</h1>
-      <div className="grid gap-6">
-        {guides.map((guide) => (
-          <Link
-            key={guide.slug}
-            href={`/guides/${guide.slug}`}
-            className="block p-6 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 transition-colors"
-          >
-            <h2 className="text-2xl font-semibold mb-2">{guide.meta.title}</h2>
-            {guide.meta.description && (
-              <p className="text-gray-600 dark:text-gray-400">{guide.meta.description}</p>
-            )}
-            {guide.meta.tags && (
-              <div className="mt-4 flex gap-2">
-                {guide.meta.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-1 text-sm bg-gray-100 dark:bg-gray-800 rounded"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </Link>
-        ))}
-      </div>
+    <div className="space-y-12">
+      {/* Hero Section */}
+      <section className="text-center py-12 px-4 rounded-lg bg-gradient-to-br from-brand-base via-gray-900 to-black text-white">
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4">
+          HackAI LLM Project Guides
+        </h1>
+        <p className="text-lg md:text-xl text-muted-foreground mb-6 max-w-2xl mx-auto">
+          Learn to partner with AI assistants like Cursor to build and enhance web applications step-by-step.
+        </p>
+        {/* Optional CTA Button */}
+        {/* <Button size="lg" variant="secondary">Start Learning</Button> */}
+      </section>
+
+      {/* Guides List */}
+      <section className="space-y-8">
+        <h2 className="text-3xl font-bold border-b pb-2">Available Guides</h2>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+          {guides.map((guide) => (
+            <Link key={guide.slug} href={`/guides/${guide.slug}`} className="block group">
+              <Card className="h-full transition-all duration-300 ease-in-out group-hover:border-primary group-hover:shadow-lg dark:group-hover:shadow-primary/30">
+                <CardHeader>
+                  <CardTitle className="text-xl group-hover:text-primary">
+                    {guide.meta.title}
+                  </CardTitle>
+                  {guide.meta.description && (
+                    <CardDescription>{guide.meta.description}</CardDescription>
+                  )}
+                </CardHeader>
+                {guide.meta.tags && (
+                  <CardFooter className="flex flex-wrap gap-2 pt-4">
+                    {guide.meta.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </CardFooter>
+                )}
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   )
 } 
