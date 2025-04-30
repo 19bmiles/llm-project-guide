@@ -13,18 +13,18 @@ graph TD
 
 ## 1 GitHub data
 
-| Step | What you’ll do | Tips |
+| Step | What you'll do | Tips |
 |------|----------------|------|
 | 1.1 | **Create a PAT** with `repo` scope → store locally as `GITHUB_TOKEN`. | Settings ➜ Developer settings ➜ Personal access tokens (classic). |
-| 1.2 | In the CLI, call `https://api.github.com/repos/<owner>/<repo>/pulls/<n>` to grab: title, body, labels, merge commit SHA, dates. | Use `octokit/rest` (Node) or `PyGithub` (Python) — whichever language you’re faster in. |
-| 1.3 | Fetch the **squash commit** via `GET /repos/<owner>/<repo>/commits/<sha>`<br/>then `GET /repos/<owner>/<repo>/commits/<sha>/diff` (or `?accept=application/vnd.github.v3.diff`). | Pipe diff lines through a “window” function that keeps ±20 around each hunk. |
+| 1.2 | In the CLI, call `https://api.github.com/repos/<owner>/<repo>/pulls/<n>` to grab: title, body, labels, merge commit SHA, dates. | Use `octokit/rest` (Node) or `PyGithub` (Python) — whichever language you're faster in. |
+| 1.3 | Fetch the **squash commit** via `GET /repos/<owner>/<repo>/commits/<sha>`<br/>then `GET /repos/<owner>/<repo>/commits/<sha>/diff` (or `?accept=application/vnd.github.v3.diff`). | Pipe diff lines through a "window" function that keeps ±20 around each hunk. |
 | 1.4 | Collect PR labels → map to `tags`. | e.g. `feature`, `bugfix`, `refactor`. |
 
 ---
 
 ## 2 Cursor chat extraction
 
-| Step | What you’ll do | Notes |
+| Step | What you'll do | Notes |
 |------|----------------|-------|
 | 2.1 | Accept path(s) to `state.vscdb` as CLI arg or env var. | For now: `./cursor-logs/state.vscdb` once added to repo (git-ignored). |
 | 2.2 | Run a **SQLite query**:<br/>```sql<br/>SELECT created, content FROM items WHERE type='conversation' ORDER BY created;<br/>``` | Cursor stores each message JSON in `content`. |
@@ -68,13 +68,55 @@ import { DiffBlock } from '../../components/DiffBlock' // optional
 
 ---
 
-## 4 CLI skeleton (Node TypeScript, example)
+## 4 Project Structure & Types
+
+```typescript
+scripts/
+├── types/                    // TypeScript type definitions
+│   ├── github.ts            // GitHub API related types
+│   ├── sqlite.ts           // SQLite schema types
+│   ├── mdx.ts             // MDX template types
+│   └── config.ts          // Configuration types
+├── utils/                    // Utility functions
+│   ├── github.ts           // GitHub API interactions
+│   ├── sqlite.ts          // SQLite operations
+│   ├── template.ts        // MDX template rendering
+│   └── config.ts         // Configuration management
+├── hackai-log.ts            // Main CLI script
+└── constants.ts             // Shared constants
+```
 
 ```bash
-pnpm add -D @octokit/rest commander yaml sqlite3 chalk
+pnpm add -D @octokit/rest commander yaml sqlite3 chalk zod dotenv
+pnpm add -D @types/sqlite3 tsx
 ```
 
 ```ts
+// scripts/types/github.ts
+export interface PullRequestData {
+  number: number;
+  title: string;
+  body: string;
+  labels: Array<{ name: string }>;
+  merge_commit_sha: string;
+  merged_at: string;
+}
+
+// scripts/types/config.ts
+export interface Config {
+  github: {
+    token: string;
+    owner: string;
+    repo: string;
+  };
+  sqlite: {
+    dbPath: string;
+  };
+  output: {
+    mdxPath: string;
+  };
+}
+
 // scripts/hackai-log.ts
 import { Octokit } from '@octokit/rest';
 import fs from 'fs/promises';
@@ -82,52 +124,87 @@ import { parse } from 'yaml';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
 import { program } from 'commander';
+import { z } from 'zod';
+import { Config } from './types/config';
+import { loadConfig } from './utils/config';
+import { fetchPRData } from './utils/github';
+import { harvestCursorChats } from './utils/sqlite';
+import { renderTemplate } from './utils/template';
 
-program.requiredOption('-p, --pr <number>', 'Pull-request number');
-program.parse();
+program
+  .requiredOption('-p, --pr <number>', 'Pull-request number')
+  .option('-c, --config <path>', 'Path to config file', './.env')
+  .parse();
 
-const { pr } = program.opts();
-const gh = new Octokit({ auth: process.env.GITHUB_TOKEN });
+const { pr, config: configPath } = program.opts();
 
 async function main() {
-  const { data: prData } = await gh.pulls.get({ owner, repo, pull_number: +pr });
-  const { data: commit } = await gh.repos.getCommit({
-    owner, repo, ref: prData.merge_commit_sha
-  });
-  const diff = await gh.request(
-    `GET /repos/${owner}/${repo}/commits/${commit.sha}`, {
-      headers: { accept: 'application/vnd.github.v3.diff' }
-    }
-  );
-  const cropped = cropDiff(diff.data); // implement ±20-line window
-  const chat = await harvestCursorChats();
-  const mdx = renderTemplate({ prData, cropped, chat });
-  await fs.writeFile(`src/content/logs/pr-${pr}.mdx`, mdx);
+  // Load and validate configuration
+  const config = await loadConfig(configPath);
+  
+  // Initialize GitHub client
+  const gh = new Octokit({ auth: config.github.token });
+  
+  // Fetch PR data and diff
+  const prData = await fetchPRData(gh, config, +pr);
+  
+  // Get relevant cursor chats
+  const chat = await harvestCursorChats(config, prData);
+  
+  // Generate MDX
+  const mdx = await renderTemplate({ prData, chat });
+  
+  // Write output
+  const outputPath = `${config.output.mdxPath}/pr-${pr}.mdx`;
+  await fs.writeFile(outputPath, mdx);
+  
+  console.log(`✨ Generated documentation at ${outputPath}`);
 }
 
-main();
+main().catch(console.error);
 ```
 
-*Add `cropDiff`, `harvestCursorChats`, `renderTemplate` util modules to keep main clean.*
+## 5 Configuration & Setup
 
----
+1. **Create `.env` file**:
+   ```env
+   GITHUB_TOKEN=ghp_xxx
+   GITHUB_OWNER=19bmiles
+   GITHUB_REPO=llm-project-guide
+   SQLITE_DB_PATH=./cursor-logs/state.vscdb
+   MDX_OUTPUT_PATH=./src/content/logs
+   ```
 
-## 5 Repo wiring & dev UX
-
-1. **Place script** in `package.json`:
+2. **Add script to `package.json`**:
    ```json
-   "scripts": {
-     "log:pr": "tsx scripts/hackai-log.ts"
+   {
+     "scripts": {
+       "log:pr": "tsx scripts/hackai-log.ts",
+       "log:pr:watch": "tsx watch scripts/hackai-log.ts"
+     }
    }
    ```
-2. **Ignore** the raw `state.vscdb` with a `# cursor DB` line in `.gitignore` (if you prefer not to commit it).
-3. **Run**:
-   ```bash
-   export GITHUB_TOKEN=ghp_xxx
-   pnpm log:pr 42
+
+3. **Update `.gitignore`**:
+   ```gitignore
+   # cursor DB
+   cursor-logs/
+   
+   # environment
+   .env
+   .env.*
    ```
 
-A fresh `pr-42.mdx` appears under `/src/content/logs/`, hot-reloaded by next-MDX.
+4. **Run with**:
+   ```bash
+   pnpm log:pr -p 1  # For PR #1
+   ```
+
+The script will:
+- Validate environment/config
+- Check GitHub token permissions
+- Create output directory if needed
+- Show progress with chalk-styled console output
 
 ---
 
@@ -152,7 +229,7 @@ A fresh `pr-42.mdx` appears under `/src/content/logs/`, hot-reloaded by next-MDX
 
 ## 8 WIP & edge-case handling
 
-* **Squash vs. rebase**: script reads the *merged* commit SHA; you’ll always get the final state.  
-* **Large chats**: set `MAX_MARKDOWN_SIZE`; if exceeded, truncate with “*(…truncated, see original ChatGPT link)*”.  
+* **Squash vs. rebase**: script reads the *merged* commit SHA; you'll always get the final state.  
+* **Large chats**: set `MAX_MARKDOWN_SIZE`; if exceeded, truncate with "(…truncated, see original ChatGPT link)".  
 * **Diff cropping**: respect `MAX_HUNK_LINES=20`; if a hunk is bigger, show first/last 10.  
 * **Missing PAT**: exit with friendly error and open GitHub PAT creation URL in browser.
