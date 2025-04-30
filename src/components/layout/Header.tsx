@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/theme-toggle'
-import { Menu } from 'lucide-react'
+import { MobileNav } from '@/components/MobileNav'
 
 export function Header() {
   return (
@@ -13,17 +13,14 @@ export function Header() {
             <span className="font-extrabold text-xl tracking-tight text-brand-accent group-hover:text-brand-base transition-colors">HackAI Guide</span>
           </Link>
         </div>
-        <nav className="md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-6">
           <Link href="/guides" className="text-sm font-medium hover:text-brand-accent transition-colors">Guides</Link>
           <Link href="/resources/prompt-library" className="text-sm font-medium hover:text-brand-accent transition-colors">Prompt Library</Link>
           <Link href="/about" className="text-sm font-medium hover:text-brand-accent transition-colors">About</Link>
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
-          {/* Mobile menu button for sidebar */}
-          <button className="md:hidden p-2 rounded hover:bg-accent/20 transition-colors" aria-label="Open menu">
-            <Menu className="w-6 h-6 text-brand-accent" />
-          </button>
+          <MobileNav />
         </div>
       </div>
     </header>
