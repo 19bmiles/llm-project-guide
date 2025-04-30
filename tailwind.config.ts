@@ -48,6 +48,10 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        brand: {
+          base: 'hsl(142, 71%, 45%)',
+          accent: 'hsl(142, 71%, 35%)',
+        },
       },
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
