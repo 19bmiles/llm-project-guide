@@ -35,6 +35,8 @@ function CodeBlock({ className = '', children = '' }) {
 
 const components = {
   pre: CodeBlock,
+  // Ensure code blocks are rendered as static text
+  code: ({ children }: { children: React.ReactNode }) => <code>{children}</code>,
 }
 
 interface MDXContentProps {
@@ -42,5 +44,9 @@ interface MDXContentProps {
 }
 
 export function MDXContent({ content }: MDXContentProps) {
-  return <MDXRemote {...content} components={components} />
+  return (
+    <div className="mdx-content">
+      <MDXRemote {...content} components={components} />
+    </div>
+  )
 } 
