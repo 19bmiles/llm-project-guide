@@ -3,6 +3,8 @@ import path from 'path'
 import matter from 'gray-matter'
 import { serialize } from 'next-mdx-remote/serialize'
 import type { MDXRemoteSerializeResult } from 'next-mdx-remote'
+import rehypePrism from 'rehype-prism-plus'
+import remarkGfm from 'remark-gfm'
 
 const guidesDirectory = path.join(process.cwd(), 'src/content/guides')
 
@@ -30,8 +32,12 @@ export async function getGuideBySlug(slug: string): Promise<Guide> {
     mdxOptions: {
       development: process.env.NODE_ENV === 'development',
       format: 'mdx',
+      remarkPlugins: [remarkGfm],
+      rehypePlugins: [
+        [rehypePrism, { showLineNumbers: true }]
+      ],
     },
-    scope: data,
+    parseFrontmatter: true,
   })
 
   return {
