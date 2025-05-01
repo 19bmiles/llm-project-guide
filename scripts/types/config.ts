@@ -19,6 +19,12 @@ export const ConfigSchema = z.object({
     maxHunkLines: 20,
     contextLines: 3,
   }),
+  chat: z.object({
+    characterThreshold: z.number().default(1000),
+    nameFilter: z.string().optional(),
+  }).default({
+    characterThreshold: 1000,
+  }),
 });
 
 export type Config = z.infer<typeof ConfigSchema>; 
